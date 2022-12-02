@@ -1,0 +1,9 @@
+spring:
+  mongodb:
+    embedded:
+      version: 5.0.0
+  data:
+    mongodb:
+      host: localhost
+      port: 27017
+      database: app1

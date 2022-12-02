@@ -1,0 +1,37 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '2.7.6'
+    id 'io.spring.dependency-management' version '1.0.15.RELEASE'
+}
+
+group = 'io.lhysin'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '11'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter'
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
+    implementation 'org.springframework.boot:spring-boot-starter-data-mongodb-reactive'
+
+    implementation 'io.springfox:springfox-boot-starter:3.0.0'
+
+    // https://projectlombok.org
+    compileOnly 'org.projectlombok:lombok:'
+    annotationProcessor'org.projectlombok:lombok'
+
+    implementation 'de.flapdoodle.embed:de.flapdoodle.embed.mongo'
+
+    // test only
+    testCompileOnly'org.projectlombok:lombok'
+    testAnnotationProcessor'org.projectlombok:lombok'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'io.projectreactor:reactor-test'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
