@@ -10,7 +10,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import io.lhysin.reactive.entity.Account;
+import io.lhysin.reactive.document.Account;
 import io.lhysin.reactive.repository.AccountReactiveRepository;
 import reactor.core.publisher.Flux;
 import reactor.test.StepVerifier;
@@ -18,7 +18,7 @@ import reactor.test.StepVerifier;
 @ExtendWith(SpringExtension.class)
 @DataMongoTest
 //@ImportAutoConfiguration(exclude = EmbeddedMongoAutoConfiguration.class)
-@ContextConfiguration(classes = { SpringReactiveApplication.class })
+@ContextConfiguration(classes = {SpringReactiveApplication.class})
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class ReactiveRepositoryTests {
 
@@ -27,14 +27,17 @@ class ReactiveRepositoryTests {
 
     @Test
     public void givenValue_whenFindAllByValue_thenFindAccount() {
-        accountReactiveRepository.save(new Account(null, "Bill", 12.3)).block();
+        accountReactiveRepository.save(Account.builder()
+            .owner("Bill")
+            .value(12.3)
+            .build()).block();
         Flux<Account> accountFlux = accountReactiveRepository.findAllByValue(12.3);
 
         StepVerifier
             .create(accountFlux)
             .assertNext(account -> {
                 assertEquals("Bill", account.getOwner());
-                assertEquals(Double.valueOf(12.3) , account.getValue());
+                assertEquals(Double.valueOf(12.3), account.getValue());
                 assertNotNull(account.getId());
             })
             .expectComplete()

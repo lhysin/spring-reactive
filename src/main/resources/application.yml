@@ -2,8 +2,13 @@ spring:
   mongodb:
     embedded:
       version: 5.0.0
+
   data:
     mongodb:
       host: localhost
       port: 27017
-      database: app1
+      database: db1
+logging:
+  level:
+    io.lhysin: DEBUG
+    org.springframework.data.mongodb.core.MongoTemplate: DEBUG
