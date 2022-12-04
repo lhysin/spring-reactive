@@ -3,6 +3,7 @@ package io.lhysin.reactive.document;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.CompoundIndex;
@@ -70,8 +71,27 @@ public class Point {
 
     }
 
-    public void completePoint() {
-        this.complete = true;
+    public List<PointTransaction> getPointTransactions() {
+        return Optional.ofNullable(this.pointTransactions)
+            .orElse(List.of());
+    }
+
+    public BigDecimal getAmount() {
+        return Optional.ofNullable(this.amount).orElse(BigDecimal.ZERO);
+    }
+
+    public BigDecimal getConsumedAmount() {
+        return Optional.ofNullable(this.consumedAmount).orElse(BigDecimal.ZERO);
+    }
+
+    public void addConsumedAmount(BigDecimal req) {
+        this.consumedAmount = this.getConsumedAmount().add(Optional.ofNullable(req).orElse(BigDecimal.ZERO));
+    }
+
+    public void updateCompletePoint() {
+        if(this.getAmount().compareTo(this.getConsumedAmount()) == 0) {
+            this.complete = true;
+        }
     }
 
 }

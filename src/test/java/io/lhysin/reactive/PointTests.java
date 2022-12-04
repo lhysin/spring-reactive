@@ -11,14 +11,21 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import io.lhysin.reactive.config.PointDataLoader;
+import io.lhysin.reactive.converter.CreatePointReqToPointConverter;
 import io.lhysin.reactive.converter.PointToPointResConverter;
 import io.lhysin.reactive.document.Point;
 import io.lhysin.reactive.dto.PointRes;
-import io.lhysin.reactive.handler.PointHandler;
+import io.lhysin.reactive.dto.UsePointReq;
+import io.lhysin.reactive.handler.pointService;
+import io.lhysin.reactive.repository.PointRepository;
+import io.lhysin.reactive.service.PointService;
 import io.lhysin.reactive.type.PointCreatedType;
 import io.lhysin.reactive.type.PointTransactionType;
 import io.lhysin.reactive.type.PointType;
@@ -28,16 +35,73 @@ import reactor.core.publisher.Flux;
 @ExtendWith(SpringExtension.class)
 @DataMongoTest
 //@ImportAutoConfiguration(exclude = EmbeddedMongoAutoConfiguration.class)
-@ContextConfiguration(classes = {SpringReactiveApplication.class, PointHandler.class, PointToPointResConverter.class})
+@ContextConfiguration(classes = {
+    SpringReactiveApplication.class,
+    PointDataLoader.class,
+    pointService.class,
+    PointRepository.class,
+    PointToPointResConverter.class,
+    CreatePointReqToPointConverter.class})
+
+
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 @Slf4j
 class PointTests {
 
     @Autowired
-    private PointHandler pointHandler;
+    private PointService pointService;
+    @Autowired
+    private PointRepository pointRepository;
+
 
     @Test
-    public void givenValue_whenFindAllByValue_thenFindAccount() {
+    public void usePointTest() {
+        String userId = "testUserID";
+        String createdBy = "EVENT_MASTER";
+
+        // found points
+        Pageable pageable = PageRequest.of(0, 10);
+        pointService.findByUserIdAndNotExpired(userId, pageable)
+            .collectList()
+            .block()
+            .stream()
+            .forEach(point -> log.debug("available point : {}", point));
+
+        BigDecimal availablePointAmount = pointService.findAvailablePointAmountByUserId(userId).block();
+        log.debug("availablePointAmount : {}", availablePointAmount);
+
+
+        pointService.usePoint(UsePointReq.builder()
+                .userId(userId)
+                .amount(new BigDecimal(100))
+                .pointTransactionType(PointTransactionType.USE)
+                .createdBy(createdBy)
+            .build()).collectList().block();
+
+        pointService.usePoint(UsePointReq.builder()
+            .userId(userId)
+            .amount(new BigDecimal(100))
+            .pointTransactionType(PointTransactionType.USE)
+            .createdBy(createdBy)
+            .build()).collectList().block();
+
+
+        pointService.usePoint(UsePointReq.builder()
+            .userId(userId)
+            .amount(new BigDecimal(100))
+            .pointTransactionType(PointTransactionType.USE)
+            .createdBy(createdBy)
+            .build()).collectList().block();
+
+        BigDecimal afterAvailablePointAmount = pointService.findAvailablePointAmountByUserId(userId).block();
+        log.debug("afterAvailablePointAmount : {}", afterAvailablePointAmount);
+
+        List<Point> finalPoints = pointService.findByUserIdAndNotExpired(userId, pageable).collectList().block();
+        log.debug("finalPoints : {}", finalPoints);
+    }
+
+    @Test
+    public void eeeee() {
         ;
 
         String userId = "testUserID";
@@ -69,17 +133,17 @@ class PointTests {
             })
         );
 
-        pointHandler.saveAll(points).collectList().block();
+        pointService.saveAll(points).collectList().block();
 
-        List<PointRes> po = pointHandler.findByUserId(userId).collectList().block();
+        List<PointRes> po = pointService.findByUserId(userId).collectList().block();
 
-        BigDecimal availableAmount = pointHandler.findAvailablePoint(userId).block();
+        BigDecimal availableAmount = pointService.findAvailablePointAmountByUserId(userId).block();
 
-        log.debug("pointHandler.findAvailablePoint() availableAmount : {}", availableAmount);
+        log.debug("pointService.findAvailablePoint() availableAmount : {}", availableAmount);
 
 
         // StepVerifier
-        //     .create(pointHandler.findByUserId(userId).collectList())
+        //     .create(pointService.findByUserId(userId).collectList())
         //     .assertNext(pointList -> {
         //         for (Point p : pointList) {
         //             log.debug("created point : {}", p);
