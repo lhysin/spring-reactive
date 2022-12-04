@@ -2,7 +2,7 @@ package io.lhysin.reactive.config;
 
 // @Configuration
 // @EnableReactiveMongoRepositories
-public class MongoReactiveConfig{
+public class MongoReactiveConfig {
     // extends AbstractReactiveMongoConfiguration {
 
     // @Bean

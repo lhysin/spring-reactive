@@ -54,23 +54,6 @@ public class Point {
 
     private List<PointTransaction> pointTransactions;
 
-    @Getter
-    @Builder
-    @ToString
-    @NoArgsConstructor(access = AccessLevel.PROTECTED)
-    @AllArgsConstructor(access = AccessLevel.PROTECTED)
-    public static class PointTransaction {
-
-        private PointTransactionType pointTransactionType;
-
-        private BigDecimal amount;
-
-        private String createdBy;
-
-        private LocalDateTime createdAt;
-
-    }
-
     public List<PointTransaction> getPointTransactions() {
         return Optional.ofNullable(this.pointTransactions)
             .orElse(List.of());
@@ -89,9 +72,26 @@ public class Point {
     }
 
     public void updateCompletePoint() {
-        if(this.getAmount().compareTo(this.getConsumedAmount()) == 0) {
+        if (this.getAmount().compareTo(this.getConsumedAmount()) == 0) {
             this.complete = true;
         }
+    }
+
+    @Getter
+    @Builder
+    @ToString
+    @NoArgsConstructor(access = AccessLevel.PROTECTED)
+    @AllArgsConstructor(access = AccessLevel.PROTECTED)
+    public static class PointTransaction {
+
+        private PointTransactionType pointTransactionType;
+
+        private BigDecimal amount;
+
+        private String createdBy;
+
+        private LocalDateTime createdAt;
+
     }
 
 }

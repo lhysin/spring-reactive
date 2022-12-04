@@ -8,8 +8,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ValidatorHandler {
 
-
-
     // public <T> void validate(T o) {
     //     Set<ConstraintViolation<T>> validate = validator.validate(o);
     //     if(! validate.isEmpty()) {

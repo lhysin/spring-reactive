@@ -13,7 +13,7 @@ import io.lhysin.reactive.type.PointCreatedType;
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Flux;
 
-@Profile("!prd")
+@Profile("!prd & !test")
 @Component
 @RequiredArgsConstructor
 public class PointDataLoader implements ApplicationRunner {
