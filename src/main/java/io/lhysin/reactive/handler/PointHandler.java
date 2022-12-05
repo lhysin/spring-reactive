@@ -12,6 +12,7 @@ import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 
 import io.lhysin.reactive.document.Point;
+import io.lhysin.reactive.dto.CancelPointReq;
 import io.lhysin.reactive.dto.CreatePointReq;
 import io.lhysin.reactive.dto.PointRes;
 import io.lhysin.reactive.dto.UsePointReq;
@@ -36,7 +37,6 @@ public class PointHandler {
     }
 
     public Mono<ServerResponse> usePoint(ServerRequest req) {
-        String userId = req.pathVariable("userId");
         Flux<Point> pointFlux = req.bodyToMono(UsePointReq.class)
             .flatMapMany(pointService::usePoint);
 
@@ -45,10 +45,8 @@ public class PointHandler {
     }
 
     public Mono<ServerResponse> cancelPoint(ServerRequest req) {
-        String userId = req.pathVariable("userId");
-        Flux<Point> pointFlux = req.bodyToMono(UsePointReq.class)
-            // TODO
-            .flatMapMany(usePointReq -> Flux.just(Point.builder().build()));
+        Flux<Point> pointFlux = req.bodyToMono(CancelPointReq.class)
+            .flatMapMany(pointService::cancelPoint);
 
         return status(HttpStatus.NO_CONTENT)
             .body(pointFlux, Void.class);

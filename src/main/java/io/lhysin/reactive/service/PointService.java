@@ -12,10 +12,12 @@ import org.springframework.stereotype.Service;
 import io.lhysin.reactive.converter.CreatePointReqToPointConverter;
 import io.lhysin.reactive.converter.PointToPointResConverter;
 import io.lhysin.reactive.document.Point;
+import io.lhysin.reactive.dto.CancelPointReq;
 import io.lhysin.reactive.dto.CreatePointReq;
 import io.lhysin.reactive.dto.PointRes;
 import io.lhysin.reactive.dto.UsePointReq;
 import io.lhysin.reactive.repository.PointRepository;
+import io.lhysin.reactive.type.PointTransactionType;
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -75,14 +77,14 @@ public class PointService {
                         currentConsumeAmount = reqAmountLong - (amount - consumedAmount);
                     }
 
-                    point.addConsumedAmount(new BigDecimal(currentConsumeAmount));
-                    reqAmount.set(new BigDecimal(reqAmountLong - currentConsumeAmount));
+                    point.addConsumedAmount(new BigDecimal(reqAmountLong - currentConsumeAmount));
+                    reqAmount.set(reqAmount.get().subtract(point.getConsumedAmount()));
 
                     point.updateCompletePoint();
                     point.getPointTransactions().add(
                         Point.PointTransaction.builder()
                             .amount(point.getConsumedAmount())
-                            .pointTransactionType(req.getPointTransactionType())
+                            .pointTransactionType(PointTransactionType.USE)
                             .createdAt(LocalDateTime.now())
                             .createdBy(req.getCreatedBy())
                             .build());
@@ -92,7 +94,61 @@ public class PointService {
 
             return pointRepository.saveAll(pointFlux);
         });
+    }
 
+    public Flux<Point> cancelPoint(CancelPointReq req) {
+        return pointRepository.count().flatMapMany(aLong -> {
+
+            int pageSize = 10;
+            AtomicInteger pageNumber = new AtomicInteger(0);
+            AtomicReference<BigDecimal> reqAmount = new AtomicReference<>(req.getAmount());
+
+            Flux<Point> pointFlux = Flux.range(0, Math.toIntExact(aLong))
+                // 0 ~ n => 10, 20, 30 ...
+                .filter(value -> value % pageSize == 0)
+
+                // get partitioning flux
+                .flatMap(it -> {
+                    Pageable page = PageRequest.of(pageNumber.getAndIncrement(), pageSize);
+                    return pointRepository.findByUserIdAndExpiredAtGreaterThanOrderByCreatedAtDesc(
+                        req.getUserId(),
+                        LocalDateTime.now(), page);
+
+                }).filter(point -> {
+                    // pass element
+                    // check remain consume point amount.
+                    return point.getConsumedAmount().compareTo(BigDecimal.ZERO) > 0;
+                }).takeWhile(point -> {
+                    // prevent loop
+                    // check until request amount is positive.
+                    return reqAmount.get().compareTo(BigDecimal.ZERO) > 0;
+                }).map(point -> {
+                    long amount = point.getAmount().longValue();
+                    long consumedAmount = point.getConsumedAmount().longValue();
+                    long reqAmountLong = reqAmount.get().longValue();
+
+                    long currentCancelAmount = reqAmountLong;
+                    if (reqAmountLong > consumedAmount) {
+                        currentCancelAmount = reqAmountLong - consumedAmount;
+                    }
+
+                    point.subtractConsumedAmount(new BigDecimal(reqAmountLong - currentCancelAmount));
+                    reqAmount.set(new BigDecimal(reqAmountLong - currentCancelAmount));
+
+                    point.updateCompletePoint();
+                    point.getPointTransactions().add(
+                        Point.PointTransaction.builder()
+                            .amount(point.getConsumedAmount())
+                            .pointTransactionType(PointTransactionType.CANCEL)
+                            .createdAt(LocalDateTime.now())
+                            .createdBy(req.getCreatedBy())
+                            .build());
+
+                    return point;
+                });
+
+            return pointRepository.saveAll(pointFlux);
+        });
     }
 
     public Mono<BigDecimal> findAvailablePointAmountByUserId(String userId) {

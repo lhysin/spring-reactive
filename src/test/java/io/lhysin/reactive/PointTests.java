@@ -70,21 +70,18 @@ class PointTests {
         pointService.usePoint(UsePointReq.builder()
             .userId(userId)
             .amount(new BigDecimal(100))
-            .pointTransactionType(PointTransactionType.USE)
             .createdBy(createdBy)
             .build()).collectList().block();
 
         pointService.usePoint(UsePointReq.builder()
             .userId(userId)
             .amount(new BigDecimal(100))
-            .pointTransactionType(PointTransactionType.USE)
             .createdBy(createdBy)
             .build()).collectList().block();
 
         pointService.usePoint(UsePointReq.builder()
             .userId(userId)
             .amount(new BigDecimal(100))
-            .pointTransactionType(PointTransactionType.USE)
             .createdBy(createdBy)
             .build()).collectList().block();
 

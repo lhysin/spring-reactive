@@ -10,8 +10,10 @@ import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import io.lhysin.reactive.dto.CancelPointReq;
 import io.lhysin.reactive.dto.CreatePointReq;
 import io.lhysin.reactive.dto.PointRes;
+import io.lhysin.reactive.dto.UsePointReq;
 import io.lhysin.reactive.type.PointCreatedType;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Flux;
@@ -54,19 +56,17 @@ class PointWebTests {
         WebClient client = createDefaultClient();
         String userId = "createTest";
 
-        CreatePointReq req = CreatePointReq.builder()
-            .userId(userId)
-            .amount(new BigDecimal(300))
-            .pointCreatedType(PointCreatedType.EVENT)
-            .createdBy("MY")
-            .build();
-
         Mono<BigDecimal> availablePointMono = client.get().uri("/points/" + userId + "/summary")
             .retrieve()
             .bodyToMono(BigDecimal.class);
 
-        Mono<Void> createMono = client.post().uri("/points/" + userId)
-            .body(Mono.just(req), CreatePointReq.class)
+        Mono<Void> createMono = client.post().uri("/points")
+            .body(Mono.just(CreatePointReq.builder()
+                .userId(userId)
+                .amount(new BigDecimal(300))
+                .pointCreatedType(PointCreatedType.EVENT)
+                .createdBy("MY")
+                .build()), CreatePointReq.class)
             .retrieve()
             .bodyToMono(Void.class);
 
@@ -77,5 +77,31 @@ class PointWebTests {
         create20Req.collectList().block();
         log.debug("available Point!!!! : {}", availablePointMono.block());
 
+        Mono<Void> useMono = client.put().uri("/points/use")
+            .body(Mono.just(UsePointReq.builder()
+                .userId(userId)
+                .amount(new BigDecimal(1500))
+                .createdBy("MY")
+                .build()), CreatePointReq.class)
+            .retrieve()
+            .bodyToMono(Void.class);
+
+        useMono.block();
+        log.debug("available Point!!!! : {}", availablePointMono.block());
+
+
+        Mono<Void> cancelMono = client.patch().uri("/points/cancel")
+            .body(Mono.just(CancelPointReq.builder()
+                .userId(userId)
+                .amount(new BigDecimal(1000))
+                .createdBy("MY")
+                .build()), CreatePointReq.class)
+            .retrieve()
+            .bodyToMono(Void.class);
+
+        cancelMono.block();
+        log.debug("available Point!!!! : {}", availablePointMono.block());
+
     }
+
 }

@@ -18,13 +18,13 @@ public class PointRouter {
     public RouterFunction<ServerResponse> point(PointHandler pointHandler) {
 
         return route(
-            POST("/points/{userId}"), pointHandler::createPoint)
+            POST("/points"), pointHandler::createPoint)
 
             .andRoute(
-                PUT("/points/{userId}/use"), pointHandler::usePoint)
+                PUT("/points/use"), pointHandler::usePoint)
 
             .andRoute(
-                PATCH("/points/{userId}/cancel"), pointHandler::cancelPoint)
+                PATCH("/points/cancel"), pointHandler::cancelPoint)
 
             .andRoute(
                 GET("/points/{userId}")

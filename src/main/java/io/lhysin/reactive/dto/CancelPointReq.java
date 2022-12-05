@@ -15,7 +15,7 @@ import lombok.ToString;
 @ToString
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
-public class UsePointReq {
+public class CancelPointReq {
     private String userId;
     private BigDecimal amount;
     private String createdBy;

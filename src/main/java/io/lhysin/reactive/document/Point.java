@@ -71,9 +71,15 @@ public class Point {
         this.consumedAmount = this.getConsumedAmount().add(Optional.ofNullable(req).orElse(BigDecimal.ZERO));
     }
 
+    public void subtractConsumedAmount(BigDecimal req) {
+        this.consumedAmount = this.getConsumedAmount().subtract(Optional.ofNullable(req).orElse(BigDecimal.ZERO));
+    }
+
     public void updateCompletePoint() {
-        if (this.getAmount().compareTo(this.getConsumedAmount()) == 0) {
+        if (this.getAmount().compareTo(this.getConsumedAmount()) <= 0) {
             this.complete = true;
+        } else {
+            this.complete = false;
         }
     }
 
