@@ -64,7 +64,7 @@ class PointWebTests {
             .body(Mono.just(CreatePointReq.builder()
                 .userId(userId)
                 .amount(new BigDecimal(300))
-                .pointCreatedType(PointCreatedType.EVENT)
+                .pointCreatedType(PointCreatedTgitype.EVENT)
                 .createdBy("MY")
                 .build()), CreatePointReq.class)
             .retrieve()
@@ -76,6 +76,8 @@ class PointWebTests {
         log.debug("available Point!!!! : {}", availablePointMono.block());
         create20Req.collectList().block();
         log.debug("available Point!!!! : {}", availablePointMono.block());
+
+        // TODO usePont and cancel point
 
         Mono<Void> useMono = client.put().uri("/points/use")
             .body(Mono.just(UsePointReq.builder()
@@ -101,6 +103,8 @@ class PointWebTests {
 
         cancelMono.block();
         log.debug("available Point!!!! : {}", availablePointMono.block());
+
+        // TODO required StepVerifier
 
     }
 
